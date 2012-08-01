@@ -1,0 +1,92 @@
+{literal}
+<style>
+
+    .smarty_template:hover
+    {
+        border: 1px solid red;
+    }
+
+    .smarty_template
+    {
+        border: none;
+    }
+
+    .template_toolbar
+    {
+        text-align: right;
+        display: none;
+    }
+
+</style>
+
+<script type = "text/javascript">
+
+    /*
+
+    WebSockets implementation of client server between remote server with code and smarty template's and local machine
+    */
+    function JSWSHandler(host, port, uri)
+    {
+        this.host = host;
+        this.port = port;
+        this.uri = uri;
+
+        this.ws = new WebSocket("ws://" + this.host + ":" + this.port + this.uri);
+
+        this.ws.onmessage = function(evt)
+        {
+            console.log("smarty_highlighter message received: " + evt.data);
+        };
+
+        this.ws.onclose = function(evt)
+        {
+            console.log("smarty_highlighter connection closed");
+        };
+
+        this.ws.onopen = function(evt)
+        {
+            console.log("smarty_highlighter connection opened");
+        };
+    }
+
+    JSWSHandler.prototype.sendMessage = function(message)
+    {
+        console.log("smarty_highlighter sending " + message);
+        this.ws.send(message);
+    }
+
+    $(document).ready(function()
+    {
+
+        if(typeof exJSWSHandler == 'undefined')
+        {
+            exJSWSHandler = new JSWSHandler("{/literal}{$host}{literal}", {/literal}{$port}{literal}, "{/literal}{$uri}{literal}");
+
+            $(".smarty_template").each(function(){
+
+                $(this).html("<div class = 'template_toolbar'></div>" + $(this).html());
+                var name = $(this).attr("name");
+                var fullPath = $(this).attr("template_dir") + name;
+                $(this).find(".template_toolbar").html("<a class = 'template_toolbar_link' href='#' fullpath = '" + fullPath + "'>" + name + "</a>");
+
+            });
+
+            $(".smarty_template").hover(
+                function(){
+                    $(this).find(".template_toolbar").show();
+                },
+                function(){
+                    $(this).find(".template_toolbar").hide();
+                }
+            );
+
+            $("a.template_toolbar_link").click(function()
+            {
+                exJSWSHandler.sendMessage($(this).attr('fullpath'));
+                return false;
+            });
+        }
+    });
+
+</script>
+{/literal}
