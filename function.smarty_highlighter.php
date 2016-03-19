@@ -1,6 +1,6 @@
 <?php
 
-    /*
+    /*--
     smarty plugin to be evaluated from your code
     */
     function smarty_function_smarty_highlighter($params, &$smarty)
